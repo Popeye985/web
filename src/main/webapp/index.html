@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script>
+        var xhr = new XMLHttpRequest(),
+            method = "GET",
+            url = "http://localhost:8080/web/rest/hello/";
+        xhr.responseType = "json";
+        xhr.open(method, url, true);
+        xhr.onreadystatechange = function () {
+             if(xhr.readyState === 4){
+                 if(xhr.status === 200) {
+                     let persoon = xhr.response
+                     console.log(persoon);
+                 }
+              }
+        };
+        xhr.send();
+        function getProducten(){
+            console.log("In getProducten()");
+            let xhr = new XMLHttpRequest(), method="GET", url="rest/producten";
+            xhr.responseType="json";
+            xhr.open(method, url);
+            xhr.onreadystatechange = function(){
+                if(xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        vulProductenTabel(xhr.response);
+                    }else if (xhr.status === 500){
+                        console.log(xhr.response);
+                    } else {
+                        console.log("onbekende fout: " + xhr.response);
+                    }
+                }
+            }
+            xhr.send();
+        }
+        function vulProductenTabel(productlijst){
+           let tableBody = document.getElementById("tablebody");
+           tableBody.innerHTML="";
+           for(let i=0;i<productlijst.length;i++){
+               let id = productlijst[i].id;
+               let naam = productlijst[i].naam;
+               let prijs = productlijst[i].prijs
+               let tdId = document.createElement("td");
+               tdId.textContent = id;
+               let tdNaam = document.createElement("td");
+               tdNaam.textContent = naam;
+               let tdPrijs = document.createElement("td");
+               tdPrijs.textContent = prijs;
+               let trRij = document.createElement("tr");
+               trRij.appendChild(tdId);
+               trRij.appendChild(tdNaam);
+               trRij.appendChild(tdPrijs);
+               tableBody.appendChild(trRij);
+           }
+        }
+        function verzenden(){
+            console.log("Verzenden");
+            let xhr = new XMLHttpRequest(), method="POST", url="rest/producten";
+            xhr.open(method, url);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function() {
+               if (xhr.readyState === 4) {
+                  if (xhr.status === 200) {
+                     console.log("gelukt: " + xhr.response);
+                     getProducten();
+                  }else{
+                    console.log("mislukt: " + xhr.response);
+                  }
+               }
+            }
+            let id = document.getElementById("id").value;
+            let naam = document.getElementById("naam").value;
+            let prijs = document.getElementById("prijs").value;
+            let product = {id:id, naam:naam,prijs:prijs};
+            xhr.send(JSON.stringify(product));
+        }
+        function getProduct(id){
+            let xhr = new XMLHttpRequest(), method="GET", url="rest/producten/"+id;
+            xhr.responseType="json";
+            xhr.open(method, url);
+            xhr.onreadystatechange = function(){
+                if(xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        console.log(xhr.response);
+                    }else if (xhr.status === 500){
+                        console.log("error: " + xhr.response);
+                    } else {
+                        console.log("onbekende fout: " + xhr.response);
+                    }
+                }
+            }
+            xhr.send();
+        }
+    </script>
+</head>
+<body>
+<input type="number" id="id">
+<input type="text" id="naam">
+<input type="number" id="prijs">
+<button onclick="verzenden()">Voeg product toe</button>
+<button onclick="getProducten()">Toon producten</button>
+<table>
+    <thead>
+    <tr><th>id</th><th>naam</th><th>prijs</th></tr>
+    </thead>
+    <tbody id="tablebody"></tbody>
+</table>
+</body>
+</html>
